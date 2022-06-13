@@ -8,9 +8,18 @@ import java.time.LocalDate;
 
 @Data
 public class Film {
-    int id = idFilmGenerator.getId();
+    int id;
     String name;
     String description;
     LocalDate releaseDate;
+
+    public void setDuration(long duration) {
+        this.duration = Duration.ofMinutes(duration);
+    }
+
+    public long getDuration() {
+        return duration.toMinutes();
+    }
+
     Duration duration;
 }

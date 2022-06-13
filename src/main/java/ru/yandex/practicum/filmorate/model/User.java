@@ -7,7 +7,7 @@ import java.time.LocalDate;
 
 @Data
 public class User {
-    int id = idUserGenerator.getId();
+    int id;
     String email;
     String login;
     String name;
