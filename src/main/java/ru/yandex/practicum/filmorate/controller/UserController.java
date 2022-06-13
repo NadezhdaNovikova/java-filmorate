@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import util.idUserGenerator;
 
-import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -19,10 +18,10 @@ import static java.util.Objects.isNull;
 public class UserController {
 
     private final Map<Integer, User> users = new HashMap<>();
-    private final List<String> emails = new ArrayList<>();
-    private final List<String> logins =new ArrayList<>();
+    private final Map<Integer, String> emails = new HashMap<>();
+    private final List<String> logins = new ArrayList<>();
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
-            + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*"+"\\.[a-zA-Z]{2,}$";
+            + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 
     public boolean validate(final String email) {
@@ -40,90 +39,98 @@ public class UserController {
 
     @PostMapping(value = "/users")
     public User createUser(@RequestBody User user) {
-        if (isNull(user)) {
-            throw new ValidationException("Получен пустой запрос");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new ValidationException("Email отсутствует");
-        }
-        if (!validate(user.getEmail())) {
-            throw new ValidationException("Некорректный формат email");
-        }
-        if (emails.contains(user.getEmail())) {
-            log.info(String.valueOf(emails));
+        userValidate(user);
+        if (emails.containsValue(user.getEmail())) {
+            log.info("Email: " + user.getEmail());
+            for (int i : users.keySet()
+            ) {
+                users.get(i).getEmail().equals(user.getEmail());
+                log.info("Email принадлежит пользователю " + users.get(i));
+            }
             throw new ValidationException("Пользователь с email  " + user.getEmail() + " уже существует");
         }
-        if (isNull(user.getLogin())) {
-            throw new ValidationException("Не указан логин");
-        }
         if (logins.contains(user.getLogin())) {
+            for (int i : users.keySet()
+            ) {
+                users.get(i).getLogin().equals(user.getLogin());
+                log.info("Логин принадлежит пользователю " + users.get(i));
+            }
             throw new ValidationException("Пользователь с логином  " + user.getLogin() + " уже существует");
         }
-        if (!user.getLogin().toLowerCase().matches("[a-z]+")) {
-            throw new ValidationException("Логин должен содержать только буквы латинского алфавита");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть больше текущей");
-        }
-        if (isNull(user.getName()) | user.getName().isBlank()) {
-            user.setName(user.getLogin());
-            log.info(user.getLogin() + " " + user.getName());
-        }
+
         user.setId(idUserGenerator.getId());
         users.put(user.getId(), user);
-        emails.add(user.getEmail());
+        emails.put(user.getId(), user.getEmail());
         logins.add(user.getLogin());
         return user;
     }
 
     @PutMapping(value = "/users")
     public User updateUser(@RequestBody User user) {
-        if (isNull(user)) {
-            throw new ValidationException("Получен пустой запрос");
-        }
-        if (user.getId() < 1) {
+        userValidate(user);
+        if (user.getId() < 1 | !users.containsKey(user.getId())) {
+            log.info("id: " + user.getId());
             throw new ValidationException("Обновление невозможно. Некорректный id");
         }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            throw new ValidationException("Email отсутствует");
-        }
-        if (!validate(user.getEmail())) {
-            throw new ValidationException("Некорректный формат email");
-        }
-        if (emails.contains(user.getEmail()) & !user.getEmail().equals(users.get(user.getId()).getEmail())) {
+        if (emails.containsValue(user.getEmail()) & !user.getEmail().equals(users.get(user.getId()).getEmail())) {
+            log.info("Email: " + user.getEmail());
+            for (int i : users.keySet()
+            ) {
+                users.get(i).getEmail().equals(user.getEmail());
+                log.info("Email принадлежит пользователю " + users.get(i));
+            }
             throw new ValidationException("Желаемый email занят");
         }
-        if (isNull(user.getLogin())) {
-            throw new ValidationException("Не указан логин");
-        }
-        if (!user.getLogin().toLowerCase().matches("[a-z]+")) {
-            throw new ValidationException("Логин должен содержать только буквы латинского алфавита");
-        }
         if (logins.contains(user.getLogin()) & !user.getLogin().equals(users.get(user.getId()).getLogin())) {
+            for (int i : users.keySet()
+            ) {
+                users.get(i).getLogin().equals(user.getLogin());
+                log.info("Логин принадлежит пользователю " + users.get(i));
+            }
             throw new ValidationException("Желаемый логин занят");
-        }
-        if (isNull(user.getName())) {
-            user.setName(user.getLogin());
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            throw new ValidationException("Дата рождения не может быть больше текущей");
         }
         if (isNull(user.getId())) {
             user.setId(idUserGenerator.getId());
-            users.put(user.getId(), user);
-            emails.add(user.getEmail());
-            logins.add(user.getLogin());
-
         } else if (users.containsKey(user.getId())) {
-            emails.remove(users.get(user.getId()).getEmail());
             logins.remove(users.get(user.getId()).getLogin());
-            users.put(user.getId(), user);
-            emails.add(user.getEmail());
-            logins.add(user.getLogin());
-        } else {
-            throw new ValidationException("Указан некорректный id пользователя");
         }
+
+        users.put(user.getId(), user);
+        emails.put(user.getId(), user.getEmail());
+        logins.add(user.getLogin());
         return user;
     }
 
+    private void userValidate(User user) {
+        if (isNull(user)) {
+            log.info("Получен запрос: " + user);
+            throw new ValidationException("Получен пустой запрос");
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            log.info("Email: " + user.getEmail());
+            throw new ValidationException("Email отсутствует");
+        }
+        if (!validate(user.getEmail())) {
+            log.info("Email: " + user.getEmail());
+            throw new ValidationException("Некорректный формат email");
+        }
+        if (isNull(user.getLogin())) {
+            log.info("Логин: " + user.getLogin());
+            throw new ValidationException("Не указан логин");
+        }
+        if (!user.getLogin().toLowerCase().matches("[a-z]+")) {
+            log.info("Логин: " + user.getLogin());
+            throw new ValidationException("Логин должен содержать только буквы латинского алфавита");
+        }
+
+        if (user.getBirthday().isAfter(LocalDate.now())) {
+            log.info("Дата рождения: " + user.getBirthday() + " Дата текущая " + LocalDate.now());
+            throw new ValidationException("Дата рождения не может быть больше текущей");
+        }
+        if (isNull(user.getName()) | user.getName().isBlank()) {
+            log.info("Имя пользователя не указано - " + user.getName());
+            user.setName(user.getLogin());
+            log.info("Имя пользователя установлено равным логину: " + user.getName());
+        }
+    }
 }
