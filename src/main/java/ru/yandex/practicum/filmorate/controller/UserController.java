@@ -1,10 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import util.idUserGenerator;
+import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.time.LocalDate;
 import java.util.*;
@@ -17,12 +23,12 @@ import static java.util.Objects.isNull;
 @Slf4j
 public class UserController {
 
-    private final Map<Integer, User> users = new HashMap<>();
-    private final Map<Integer, String> emails = new HashMap<>();
-    private final List<String> logins = new ArrayList<>();
+    private final Map<Long, User> users = new HashMap<>();
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
             + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+    @Autowired
+    private IdGenerator idUserGenerator;
 
     public boolean validate(final String email) {
         Matcher matcher = pattern.matcher(email);
@@ -39,69 +45,55 @@ public class UserController {
 
     @PostMapping(value = "/users")
     public User createUser(@RequestBody User user) {
-        userValidate(user);
-        if (emails.containsValue(user.getEmail())) {
-            log.info("Email: " + user.getEmail());
-            for (int i : users.keySet()
-            ) {
-                users.get(i).getEmail().equals(user.getEmail());
-                log.info("Email принадлежит пользователю " + users.get(i));
-            }
-            throw new ValidationException("Пользователь с email  " + user.getEmail() + " уже существует");
-        }
-        if (logins.contains(user.getLogin())) {
-            for (int i : users.keySet()
-            ) {
-                users.get(i).getLogin().equals(user.getLogin());
-                log.info("Логин принадлежит пользователю " + users.get(i));
-            }
-            throw new ValidationException("Пользователь с логином  " + user.getLogin() + " уже существует");
-        }
-
+        userCreateValidate(user);
         user.setId(idUserGenerator.getId());
         users.put(user.getId(), user);
-        emails.put(user.getId(), user.getEmail());
-        logins.add(user.getLogin());
         return user;
     }
 
     @PutMapping(value = "/users")
     public User updateUser(@RequestBody User user) {
-        userValidate(user);
+        userUpdateValidate(user);
+        users.put(user.getId(), user);
+        return user;
+    }
+
+    private void userCreateValidate(User user) {
+        userGeneralValidate(user);
+        for (Long i : users.keySet()) {
+            if (users.get(i).getLogin().equals(user.getLogin())) {
+                log.info("Логин принадлежит пользователю " + users.get(i));
+                throw new ValidationException("Пользователь с логином  " + user.getLogin() + " уже существует");
+            }
+            if (users.get(i).getEmail().equals(user.getEmail())) {
+                log.info("Email принадлежит пользователю " + users.get(i));
+                throw new ValidationException("Пользователь с email  " + user.getEmail() + " уже существует");
+            }
+        }
+    }
+
+    private void userUpdateValidate(User user) {
+        userGeneralValidate(user);
         if (user.getId() < 1 | !users.containsKey(user.getId())) {
             log.info("id: " + user.getId());
             throw new ValidationException("Обновление невозможно. Некорректный id");
         }
-        if (emails.containsValue(user.getEmail()) & !user.getEmail().equals(users.get(user.getId()).getEmail())) {
+        if (!user.getEmail().equals(users.get(user.getId()).getEmail())) {
             log.info("Email: " + user.getEmail());
-            for (int i : users.keySet()
-            ) {
-                users.get(i).getEmail().equals(user.getEmail());
-                log.info("Email принадлежит пользователю " + users.get(i));
+            for (Long i : users.keySet()) {
+                if (users.get(i).getEmail().equals(user.getEmail())) {
+                    log.info("Email принадлежит пользователю " + users.get(i));
+                    throw new ValidationException("Желаемый email занят");
+                }
+                if (users.get(i).getLogin().equals(user.getLogin())) {
+                    log.info("Логин принадлежит пользователю " + users.get(i));
+                    throw new ValidationException("Желаемый логин занят");
+                }
             }
-            throw new ValidationException("Желаемый email занят");
         }
-        if (logins.contains(user.getLogin()) & !user.getLogin().equals(users.get(user.getId()).getLogin())) {
-            for (int i : users.keySet()
-            ) {
-                users.get(i).getLogin().equals(user.getLogin());
-                log.info("Логин принадлежит пользователю " + users.get(i));
-            }
-            throw new ValidationException("Желаемый логин занят");
-        }
-        if (isNull(user.getId())) {
-            user.setId(idUserGenerator.getId());
-        } else if (users.containsKey(user.getId())) {
-            logins.remove(users.get(user.getId()).getLogin());
-        }
-
-        users.put(user.getId(), user);
-        emails.put(user.getId(), user.getEmail());
-        logins.add(user.getLogin());
-        return user;
     }
 
-    private void userValidate(User user) {
+    private void userGeneralValidate(User user) {
         if (isNull(user)) {
             log.info("Получен запрос: " + user);
             throw new ValidationException("Получен пустой запрос");
@@ -122,7 +114,6 @@ public class UserController {
             log.info("Логин: " + user.getLogin());
             throw new ValidationException("Логин должен содержать только буквы латинского алфавита");
         }
-
         if (user.getBirthday().isAfter(LocalDate.now())) {
             log.info("Дата рождения: " + user.getBirthday() + " Дата текущая " + LocalDate.now());
             throw new ValidationException("Дата рождения не может быть больше текущей");

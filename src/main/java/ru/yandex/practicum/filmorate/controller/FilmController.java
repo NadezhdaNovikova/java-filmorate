@@ -1,11 +1,16 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.util.idFilmGenerator;
+import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -15,9 +20,12 @@ import java.util.Map;
 import static java.util.Objects.isNull;
 
 @RestController
+@Slf4j
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private static final Logger log = LoggerFactory.getLogger(FilmController.class);
+    private final Map<Long, Film> films = new HashMap<>();
+
+    @Autowired
+    private IdGenerator idFilmGenerator;
 
     @RequestMapping("/films")
 
@@ -42,12 +50,7 @@ public class FilmController {
             log.info("id: " + film.getId());
             throw new ValidationException("Обновление невозможно. Некорректный id");
         }
-        if (isNull(film.getId())) {
-            film.setId(idFilmGenerator.getId());
-            films.put(film.getId(), film);
-        } else if(films.containsKey(film.getId())){
-            films.put(film.getId(), film);
-        }
+        films.put(film.getId(), film);
         return film;
     }
 

@@ -1,17 +1,15 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.util.idFilmGenerator;
-
 import java.time.Duration;
 import java.time.LocalDate;
 
 @Data
 public class Film {
-    int id;
-    String name;
-    String description;
-    LocalDate releaseDate;
+    private long id;
+    private String name;
+    private String description;
+    private LocalDate releaseDate;
 
     public void setDuration(long duration) {
         this.duration = Duration.ofMinutes(duration);
@@ -21,5 +19,5 @@ public class Film {
         return duration.toMinutes();
     }
 
-    Duration duration;
+    private Duration duration;
 }
