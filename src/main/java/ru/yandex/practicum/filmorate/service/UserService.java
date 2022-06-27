@@ -31,8 +31,6 @@ public class UserService {
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
             + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
-    @Autowired
-    private IdGenerator idUserGenerator;
 
     public boolean validate(final String email) {
         Matcher matcher = pattern.matcher(email);
@@ -42,23 +40,23 @@ public class UserService {
     @RequestMapping("/users")
 
     @GetMapping("/users")
-    public Collection<User> getAllUsers() {
-        log.info("Текущее количество пользователей: {}", users.size());
-        return users.values();
+    public Collection<User> getAll() {
+        Collection<User> allUsers = userStorage.getAll();
+        log.info("Текущее количество пользователей: {}", allUsers.size());
+        return allUsers;
     }
 
     @PostMapping(value = "/users")
     public User createUser(@RequestBody User user) {
         userCreateValidate(user);
-        user.setId(idUserGenerator.getId());
-        users.put(user.getId(), user);
+        userStorage.add(user);
         return user;
     }
 
     @PutMapping(value = "/users")
     public User updateUser(@RequestBody User user) {
         userUpdateValidate(user);
-        users.put(user.getId(), user);
+        userStorage.change(user);
         return user;
     }
 

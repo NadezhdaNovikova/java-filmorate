@@ -34,14 +34,14 @@ return filmStorage.getAll();
 
     public Film createFilm(Film film) {
         filmValidate(film);
-
+filmStorage.add(film);
         return film;
     }
 
 
     public Film updateFilm(Film film) {
         filmValidate(film);
-
+        filmStorage.change(film);
         return film;
     }
 

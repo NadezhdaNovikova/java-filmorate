@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Set;
 
 @Slf4j
 public class AbstractStorage<T extends BaseEntity> implements Storage<T>{
@@ -26,11 +27,13 @@ public class AbstractStorage<T extends BaseEntity> implements Storage<T>{
         return data.values();
     }
 
+    public Set<Long> getAllId() {
+        return data.keySet();
+    }
+
     @Override
     public void add(T entity) {
-        log.info("Фильм  " + entity);
         entity.setId(idGenerator.getId());
-        log.info("Id:    " + entity.getId());
         data.put(entity.getId(), entity);
     }
 
