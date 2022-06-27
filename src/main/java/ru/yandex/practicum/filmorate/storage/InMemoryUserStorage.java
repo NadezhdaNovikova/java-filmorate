@@ -7,20 +7,6 @@ import java.util.List;
 
 @Component
 public class InMemoryUserStorage extends AbstractStorage<User> implements UserStorage {
-    @Override
-    public void add(){
-//TODO
-    }
-
-    @Override
-    public void change() {
-//TODO
-    }
-
-    @Override
-    public void delete() {
-//TODO
-    }
 
     @Override
     public void addFriend(long userId, long friendId) {

@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.time.LocalDate;
@@ -24,37 +25,23 @@ import static java.util.Objects.isNull;
 @Service
 public class FilmService {
     @Autowired
-    FilmStorage filmStorage;
+    InMemoryFilmStorage filmStorage;
 
-    private final Map<Long, Film> films = new HashMap<>();
-
-    @Autowired
-    private IdGenerator idFilmGenerator;
-
-    @RequestMapping("/films")
-
-    @GetMapping("/films")
     public Collection<Film> getAllFilms() {
-        log.info("Текущее количество фильмов: {}", films.size());
-        return films.values();
+return filmStorage.getAll();
     }
 
-    @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody Film film) {
+
+    public Film createFilm(Film film) {
         filmValidate(film);
-        film.setId(idFilmGenerator.getId());
-        films.put(film.getId(), film);
+
         return film;
     }
 
-    @PutMapping(value = "/films")
-    public Film updateFilm(@RequestBody Film film) {
+
+    public Film updateFilm(Film film) {
         filmValidate(film);
-        if (film.getId() < 1 | !films.containsKey(film.getId())) {
-            log.info("id: " + film.getId());
-            throw new ValidationException("Обновление невозможно. Некорректный id");
-        }
-        films.put(film.getId(), film);
+
         return film;
     }
 

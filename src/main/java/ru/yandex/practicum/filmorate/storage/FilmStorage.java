@@ -9,4 +9,6 @@ void addLike();
 void deleteLike();
 
     List<Film> getTenPopularFilms();
+    @Override
+    void change(Film film);
 }
