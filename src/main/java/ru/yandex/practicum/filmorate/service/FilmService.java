@@ -3,46 +3,53 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 
 import static java.util.Objects.isNull;
 
 @Slf4j
 @Service
 public class FilmService {
+
     @Autowired
     InMemoryFilmStorage filmStorage;
 
     public Collection<Film> getAllFilms() {
-return filmStorage.getAll();
+        return filmStorage.getAll();
     }
-
 
     public Film createFilm(Film film) {
         filmValidate(film);
-filmStorage.add(film);
+        filmStorage.add(film);
         return film;
     }
 
+    public Film getById(Long id) {
+        return filmStorage.getById(id);
+    }
 
     public Film updateFilm(Film film) {
         filmValidate(film);
         filmStorage.change(film);
         return film;
+    }
+
+    public void addLike(Long id, Long userId) {
+        filmStorage.addLike(id, userId);
+    }
+
+    public void removeLike(Long id, Long userId) {
+        filmStorage.removeLike(id, userId);
+    }
+
+    public List<Film> getPopularFilms(Integer count) {
+        return filmStorage.getPopularFilms(count);
     }
 
     private void filmValidate(Film film) {
@@ -72,4 +79,5 @@ filmStorage.add(film);
             throw new ValidationException("Некорректная продолжительность фильма");
         }
     }
+
 }
