@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -22,12 +23,17 @@ import static java.util.Objects.isNull;
 @Service
 @Slf4j
 public class UserService {
-    @Autowired
-    UserStorage userStorage;
+
+    private final UserStorage userStorage;
     private Collection<User> users = new ArrayList<>();
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
             + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
+
+    @Autowired
+    public UserService() {
+        this.userStorage = new InMemoryUserStorage();
+    }
 
     public Collection<User> getAll() {
         users = userStorage.getAll();
@@ -50,7 +56,6 @@ public class UserService {
     public User getById(Long id) {
         return userStorage.getById(id);
     }
-
 
     public void addFriend(Long id, Long friendId) {
         userStorage.addFriend(id, friendId);
@@ -135,7 +140,7 @@ public class UserService {
         }
     }
 
-    public boolean validate(final String email) {
+    private boolean validate(final String email) {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
     }

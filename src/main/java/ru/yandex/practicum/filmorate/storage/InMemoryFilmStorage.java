@@ -12,7 +12,6 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 public class InMemoryFilmStorage extends AbstractStorage<Film> implements FilmStorage {
-    private final TreeSet<Film> sortedFilms = new TreeSet<>(Comparator.comparing(Film::getRate));
 
     @Override
     public void addLike(Long id, Long userId) {
@@ -30,6 +29,7 @@ public class InMemoryFilmStorage extends AbstractStorage<Film> implements FilmSt
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
+        final TreeSet<Film> sortedFilms = new TreeSet<>(Comparator.comparing(Film::getRate));
         sortedFilms.addAll(super.getAll());
         log.info(String.valueOf(sortedFilms));
         return sortedFilms.stream()
