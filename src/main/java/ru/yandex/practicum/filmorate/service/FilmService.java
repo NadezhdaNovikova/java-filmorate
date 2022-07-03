@@ -3,14 +3,18 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
@@ -19,10 +23,13 @@ import static java.util.Objects.isNull;
 public class FilmService {
 
     private final FilmStorage filmStorage;
+    private final UserStorage userStorage;
+    private final static LocalDate VALID_DATE_FILM = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService() {
-        this.filmStorage = new InMemoryFilmStorage();
+    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
+        this.filmStorage = filmStorage;
+        this.userStorage = userStorage;
     }
 
     public Collection<Film> getAllFilms() {
@@ -35,22 +42,34 @@ public class FilmService {
         return film;
     }
 
-    public Film getById(Long id) {
-        return filmStorage.getById(id);
+    public Optional<Film> getById(Long id) throws EntityNotFoundException {
+        return Optional.ofNullable(filmStorage.getById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Фильм с id = %s не найден", id))));
     }
 
     public Film updateFilm(Film film) {
+        getById(film.getId());
         filmValidate(film);
         filmStorage.change(film);
         return film;
     }
 
     public void addLike(Long id, Long userId) {
-        filmStorage.addLike(id, userId);
+        getById(id);
+        if (userStorage.getById(userId).isPresent()) {
+            filmStorage.addLike(id, userId);
+        } else {
+            throw new EntityNotFoundException(String.format("Пользователь с id = %s не найден", userId));
+        }
     }
 
     public void removeLike(Long id, Long userId) {
-        filmStorage.removeLike(id, userId);
+        getById(id);
+        if (userStorage.getById(userId).isPresent()) {
+            filmStorage.removeLike(id, userId);
+        } else {
+            throw new EntityNotFoundException(String.format("Пользователь с id = %s не найден", userId));
+        }
     }
 
     public List<Film> getPopularFilms(Integer count) {
@@ -71,12 +90,12 @@ public class FilmService {
             log.info("Длина описания фильма: " + film.getDescription().length() + " символов.");
             throw new ValidationException("Описание фильма должно не превышать 200 символов");
         }
-        if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
+        if (film.getReleaseDate().isBefore(VALID_DATE_FILM)) {
             log.info("Дата релиза: " + film.getReleaseDate());
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
         }
         if (film.getReleaseDate().isAfter(LocalDate.now())) {
-            log.info("Дата релиза: " + film.getReleaseDate() + " Текущая дата " + LocalDate.now());
+            log.info("Дата релиза: " + film.getReleaseDate() + ". Текущая дата " + LocalDate.now());
             throw new ValidationException("Дата релиза не может позже текущей даты");
         }
         if (film.getDuration() < 1) {
@@ -84,5 +103,4 @@ public class FilmService {
             throw new ValidationException("Некорректная продолжительность фильма");
         }
     }
-
 }
