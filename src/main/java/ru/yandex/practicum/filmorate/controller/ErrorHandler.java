@@ -1,64 +1,52 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.IncorrectParameterException;
 import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
-import ru.yandex.practicum.filmorate.model.ErrorResponse;
+
+import javax.validation.ConstraintViolationException;
 
 @RestControllerAdvice
 public class ErrorHandler {
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIncorrectParameterException(final IncorrectParameterException e) {
-        return new ErrorResponse(
-                String.format("Ошибка с полем \"%s\".", e.getParameter())
-        );
+    public ResponseEntity<?> exc(ConstraintViolationException ex){
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleValidationException(final ValidationException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
+    public ResponseEntity<?> handleIncorrectParameterException(final IncorrectParameterException e) {
+        return new ResponseEntity<>(String.format("Ошибка с полем \"%s\".", e.getParameter()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleInvalidEmailException(final InvalidEmailException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
+    public ResponseEntity<?> handleValidationException(final ValidationException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleEntityNotFoundException(final EntityNotFoundException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
+    public ResponseEntity<?> handleInvalidEmailException(final InvalidEmailException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleUserAlreadyExistException(final UserAlreadyExistException e) {
-        return new ErrorResponse(
-                e.getMessage()
-        );
+    public ResponseEntity<?> handleEntityNotFoundException(final EntityNotFoundException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleThrowable(final Throwable e) {
-        return new ErrorResponse(
-                "Произошла непредвиденная ошибка."
-        );
+    public ResponseEntity<?> handleUserAlreadyExistException(final UserAlreadyExistException e) {
+        return new ResponseEntity<>(e.getMessage(), HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler
+    public ResponseEntity<?> handleThrowable(final Throwable e) {
+        return new ResponseEntity<>("Произошла непредвиденная ошибка.", HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

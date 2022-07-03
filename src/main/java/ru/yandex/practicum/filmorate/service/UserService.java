@@ -3,7 +3,9 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RequestBody;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -15,12 +17,14 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static java.util.Objects.isNull;
 
 @Service
+@Validated
 @Slf4j
 public class UserService {
 
@@ -31,8 +35,8 @@ public class UserService {
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 
     @Autowired
-    public UserService() {
-        this.userStorage = new InMemoryUserStorage();
+    public UserService(InMemoryUserStorage userStorage) {
+        this.userStorage = userStorage;
     }
 
     public Collection<User> getAll() {
@@ -48,29 +52,43 @@ public class UserService {
     }
 
     public User updateUser(@RequestBody User user) {
+        getById(user.getId());
         userUpdateValidate(user);
         userStorage.change(user);
         return user;
     }
 
-    public User getById(Long id) {
-        return userStorage.getById(id);
+    public Optional<User> getById( Long id) throws EntityNotFoundException {
+        return Optional.ofNullable(userStorage.getById(id)
+                .orElseThrow(() -> new EntityNotFoundException(String.format("Пользователь с id = %s не найден", id))));
     }
 
     public void addFriend(Long id, Long friendId) {
+        getById(id);
+        getById(friendId);
         userStorage.addFriend(id, friendId);
     }
 
     public void removeFriend(Long id, Long friendId) {
+        getById(id);
+        getById(friendId);
         userStorage.removeFriend(id, friendId);
     }
 
     public List<User> getUserFriends(Long id) {
+        getById(id);
         return userStorage.getUserFriends(id);
     }
 
     public List<User> mutualFriends(Long id, Long otherId) {
+        getById(id);
+        getById(otherId);
         return userStorage.mutualFriends(id, otherId);
+    }
+
+    public void deleteUser(User user) {
+        getById(user.getId());
+        userStorage.delete(user);
     }
 
     private void userCreateValidate(User user) {
@@ -91,9 +109,9 @@ public class UserService {
     }
 
     private void userUpdateValidate(User user) {
-        users = userStorage.getAll();
         userGeneralValidate(user);
-        if (!user.getEmail().equals(userStorage.getById(user.getId()).getEmail())) {
+        if (!user.getEmail().equals(getById(user.getId()).get().getEmail())) {
+            users = userStorage.getAll();
             log.info("Email: " + user.getEmail());
             for (User u : users) {
                 if (u.getEmail().equals(user.getEmail())) {
@@ -143,9 +161,5 @@ public class UserService {
     private boolean validate(final String email) {
         Matcher matcher = pattern.matcher(email);
         return matcher.matches();
-    }
-
-    public void deleteUser(User user) {
-        userStorage.delete(user);
     }
 }
