@@ -18,6 +18,11 @@ public class InMemoryFilmStorage extends AbstractStorage<Film> implements FilmSt
     }
 
     @Override
+    public List<Film> getAll() {
+        return super.getAll();
+    }
+
+    @Override
     public void addLike(Long id, Long userId) {
         super.data.get(id).addLike(userId);
     }

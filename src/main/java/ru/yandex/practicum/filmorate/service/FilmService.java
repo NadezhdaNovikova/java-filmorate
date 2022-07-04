@@ -12,11 +12,8 @@ import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-
-import static java.util.Objects.isNull;
 
 @Slf4j
 @Service
@@ -32,7 +29,7 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public Collection<Film> getAllFilms() {
+    public List<Film> getAllFilms() {
         return filmStorage.getAll();
     }
 
@@ -77,10 +74,6 @@ public class FilmService {
     }
 
     private void filmValidate(Film film) {
-        if (isNull(film)) {
-            log.info("Получен запрос: " + film);
-            throw new ValidationException("Получен пустой запрос");
-        }
 
         if (film.getName() == null || film.getName().isBlank()) {
             log.info("Название фильма: " + film.getName());

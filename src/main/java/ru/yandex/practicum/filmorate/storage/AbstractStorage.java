@@ -5,8 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import ru.yandex.practicum.filmorate.model.BaseEntity;
 import ru.yandex.practicum.filmorate.util.IdGenerator;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -26,8 +26,8 @@ public class AbstractStorage<T extends BaseEntity> implements Storage<T> {
     }
 
     @Override
-    public Collection<T> getAll() {
-        return data.values();
+    public List<T> getAll() {
+        return List.copyOf(data.values());
     }
 
     @Override

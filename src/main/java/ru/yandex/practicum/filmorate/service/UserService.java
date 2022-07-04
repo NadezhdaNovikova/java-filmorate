@@ -14,8 +14,6 @@ import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -29,7 +27,6 @@ import static java.util.Objects.isNull;
 public class UserService {
 
     private final UserStorage userStorage;
-    private Collection<User> users = new ArrayList<>();
     private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
             + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
@@ -39,21 +36,21 @@ public class UserService {
         this.userStorage = userStorage;
     }
 
-    public Collection<User> getAll() {
-        users = userStorage.getAll();
+    public List<User> getAll() {
+        List<User> users = userStorage.getAll();
         log.info("Текущее количество пользователей: {}", users.size());
         return users;
     }
 
     public User createUser(@RequestBody User user) {
-        userCreateValidate(user);
+        userValidateAlreadyExistsEmailAndLogin(user);
         userStorage.add(user);
         return user;
     }
 
     public User updateUser(@RequestBody User user) {
         getById(user.getId());
-        userUpdateValidate(user);
+        userValidateAlreadyExistsEmailAndLogin(user);
         userStorage.change(user);
         return user;
     }
@@ -91,46 +88,8 @@ public class UserService {
         userStorage.delete(user);
     }
 
-    private void userCreateValidate(User user) {
-        users = userStorage.getAll();
-        userGeneralValidate(user);
-        for (User u : users) {
-            if (u.getLogin().equals(user.getLogin())) {
-                log.info("Логин принадлежит пользователю " + u);
-                throw new UserAlreadyExistException(String.format("Пользователь с логином  %s уже существует",
-                        user.getLogin()));
-            }
-            if (u.getEmail().equals(user.getEmail())) {
-                log.info("Email принадлежит пользователю " + u);
-                throw new UserAlreadyExistException(String.format("Пользователь с email  %s уже существует",
-                        user.getEmail()));
-            }
-        }
-    }
-
-    private void userUpdateValidate(User user) {
-        userGeneralValidate(user);
-        if (!user.getEmail().equals(getById(user.getId()).get().getEmail())) {
-            users = userStorage.getAll();
-            log.info("Email: " + user.getEmail());
-            for (User u : users) {
-                if (u.getEmail().equals(user.getEmail())) {
-                    log.info("Email принадлежит пользователю " + u);
-                    throw new ValidationException("Желаемый email занят");
-                }
-                if (u.getLogin().equals(user.getLogin())) {
-                    log.info("Логин принадлежит пользователю " + u);
-                    throw new ValidationException("Желаемый логин занят");
-                }
-            }
-        }
-    }
-
     private void userGeneralValidate(User user) {
-        if (isNull(user)) {
-            log.info("Получен запрос: " + user);
-            throw new ValidationException("Получен пустой запрос");
-        }
+
         if (user.getEmail() == null || user.getEmail().isBlank()) {
             log.info("Email: " + user.getEmail());
             throw new InvalidEmailException("Адрес электронной почты не может быть пустым.");
@@ -155,6 +114,25 @@ public class UserService {
             log.info("Имя пользователя не указано - " + user.getName());
             user.setName(user.getLogin());
             log.info("Имя пользователя установлено равным логину: " + user.getName());
+        }
+    }
+
+    private void userValidateAlreadyExistsEmailAndLogin(User user) {
+        List<User> users = userStorage.getAll();
+        userGeneralValidate(user);
+        for (User u : users) {
+            if(!u.getId().equals(user.getId())) {
+                if (u.getLogin().equals(user.getLogin())) {
+                    log.info("Логин принадлежит пользователю " + u);
+                    throw new UserAlreadyExistException(String.format("Пользователь с логином %s уже существует",
+                            user.getLogin()));
+                }
+                if (u.getEmail().equals(user.getEmail())) {
+                    log.info("Email принадлежит пользователю " + u);
+                    throw new UserAlreadyExistException(String.format("Пользователь с email %s уже существует",
+                            user.getEmail()));
+                }
+            }
         }
     }
 
