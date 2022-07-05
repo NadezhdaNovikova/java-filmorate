@@ -1,127 +1,79 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import static java.util.Objects.isNull;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 @RestController
-@Slf4j
 public class UserController {
+    private final UserService userService;
 
-    private final Map<Long, User> users = new HashMap<>();
-    private static final String EMAIL_PATTERN = "^[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "@"
-            + "[a-zA-Z0-9]{1,}" + "((\\.|\\_|-{0,1})[a-zA-Z0-9]{1,})*" + "\\.[a-zA-Z]{2,}$";
-    private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
     @Autowired
-    private IdGenerator idUserGenerator;
-
-    public boolean validate(final String email) {
-        Matcher matcher = pattern.matcher(email);
-        return matcher.matches();
+    public UserController(UserService userService) {
+        this.userService = userService;
     }
 
     @RequestMapping("/users")
 
     @GetMapping("/users")
-    public Collection<User> getAllUsers() {
-        log.info("Текущее количество пользователей: {}", users.size());
-        return users.values();
+    public Collection<User> getAll() {
+        return userService.getAll();
     }
 
     @PostMapping(value = "/users")
     public User createUser(@RequestBody User user) {
-        userCreateValidate(user);
-        user.setId(idUserGenerator.getId());
-        users.put(user.getId(), user);
+        userService.createUser(user);
         return user;
     }
 
     @PutMapping(value = "/users")
     public User updateUser(@RequestBody User user) {
-        userUpdateValidate(user);
-        users.put(user.getId(), user);
+        userService.updateUser(user);
         return user;
     }
 
-    private void userCreateValidate(User user) {
-        userGeneralValidate(user);
-        for (Long i : users.keySet()) {
-            if (users.get(i).getLogin().equals(user.getLogin())) {
-                log.info("Логин принадлежит пользователю " + users.get(i));
-                throw new ValidationException("Пользователь с логином  " + user.getLogin() + " уже существует");
-            }
-            if (users.get(i).getEmail().equals(user.getEmail())) {
-                log.info("Email принадлежит пользователю " + users.get(i));
-                throw new ValidationException("Пользователь с email  " + user.getEmail() + " уже существует");
-            }
-        }
+    @DeleteMapping
+    public void deleteUser(@RequestBody User user) {
+        userService.deleteUser(user);
     }
 
-    private void userUpdateValidate(User user) {
-        userGeneralValidate(user);
-        if (user.getId() < 1 | !users.containsKey(user.getId())) {
-            log.info("id: " + user.getId());
-            throw new ValidationException("Обновление невозможно. Некорректный id");
-        }
-        if (!user.getEmail().equals(users.get(user.getId()).getEmail())) {
-            log.info("Email: " + user.getEmail());
-            for (Long i : users.keySet()) {
-                if (users.get(i).getEmail().equals(user.getEmail())) {
-                    log.info("Email принадлежит пользователю " + users.get(i));
-                    throw new ValidationException("Желаемый email занят");
-                }
-                if (users.get(i).getLogin().equals(user.getLogin())) {
-                    log.info("Логин принадлежит пользователю " + users.get(i));
-                    throw new ValidationException("Желаемый логин занят");
-                }
-            }
-        }
+    @GetMapping("/users/{id}")
+    public Optional<User> getById(@PathVariable("id") Long id) {
+        return userService.getById(id);
     }
 
-    private void userGeneralValidate(User user) {
-        if (isNull(user)) {
-            log.info("Получен запрос: " + user);
-            throw new ValidationException("Получен пустой запрос");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            log.info("Email: " + user.getEmail());
-            throw new ValidationException("Email отсутствует");
-        }
-        if (!validate(user.getEmail())) {
-            log.info("Email: " + user.getEmail());
-            throw new ValidationException("Некорректный формат email");
-        }
-        if (isNull(user.getLogin())) {
-            log.info("Логин: " + user.getLogin());
-            throw new ValidationException("Не указан логин");
-        }
-        if (!user.getLogin().toLowerCase().matches("[a-z]+")) {
-            log.info("Логин: " + user.getLogin());
-            throw new ValidationException("Логин должен содержать только буквы латинского алфавита");
-        }
-        if (user.getBirthday().isAfter(LocalDate.now())) {
-            log.info("Дата рождения: " + user.getBirthday() + " Дата текущая " + LocalDate.now());
-            throw new ValidationException("Дата рождения не может быть больше текущей");
-        }
-        if (isNull(user.getName()) | user.getName().isBlank()) {
-            log.info("Имя пользователя не указано - " + user.getName());
-            user.setName(user.getLogin());
-            log.info("Имя пользователя установлено равным логину: " + user.getName());
-        }
+    @PutMapping(value = "/users/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable("id") Long id,
+                          @PathVariable("friendId") Long friendId) {
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping(value = "/users/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable("id") Long id,
+                             @PathVariable("friendId") Long friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+    @GetMapping("/users/{id}/friends")
+    public List<User> getUserFriends(@PathVariable("id") Long id) {
+        return userService.getUserFriends(id);
+    }
+
+    @GetMapping("/users/{id}/friends/common/{otherId}")
+    public List<User> mutualFriends(@PathVariable("id") Long id,
+                                    @PathVariable("otherId") Long otherId) {
+        return userService.mutualFriends(id, otherId);
     }
 }
