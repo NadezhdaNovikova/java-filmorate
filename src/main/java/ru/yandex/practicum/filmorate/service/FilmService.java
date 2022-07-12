@@ -7,9 +7,9 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.FilmDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.UserDBStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,7 +24,7 @@ public class FilmService {
     private final static LocalDate VALID_DATE_FILM = LocalDate.of(1895, 12, 28);
 
     @Autowired
-    public FilmService(InMemoryFilmStorage filmStorage, InMemoryUserStorage userStorage) {
+    public FilmService(FilmDBStorage filmStorage, UserDBStorage userStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }

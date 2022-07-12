@@ -10,8 +10,8 @@ import ru.yandex.practicum.filmorate.exception.InvalidEmailException;
 import ru.yandex.practicum.filmorate.exception.UserAlreadyExistException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.UserDBStorage;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,7 +32,7 @@ public class UserService {
     private final Pattern pattern = Pattern.compile(EMAIL_PATTERN);
 
     @Autowired
-    public UserService(InMemoryUserStorage userStorage) {
+    public UserService(UserDBStorage userStorage) {
         this.userStorage = userStorage;
     }
 

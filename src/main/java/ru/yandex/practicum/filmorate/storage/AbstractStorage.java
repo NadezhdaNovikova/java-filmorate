@@ -31,9 +31,10 @@ public class AbstractStorage<T extends BaseEntity> implements Storage<T> {
     }
 
     @Override
-    public void add(T entity) {
+    public long add(T entity) {
         entity.setId(idGenerator.getId());
         data.put(entity.getId(), entity);
+    return entity.getId();
     }
 
     @Override
