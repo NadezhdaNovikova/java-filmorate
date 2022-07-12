@@ -1,26 +1,56 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.AbstractStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.util.IdGenerator;
 
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Component
 @Slf4j
-public class FilmDBStorage extends AbstractStorage<Film> implements FilmStorage {
+public class FilmDBStorage implements FilmStorage {
 
-    public FilmDBStorage(IdGenerator idGenerator) {
-        super(idGenerator);
+    private final JdbcTemplate jdbcTemplate;
+
+    public FilmDBStorage(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Override
+    public Optional<Film> getById(long id) {
+        return Optional.empty();
     }
 
     @Override
     public List<Film> getAll() {
-        return super.getAll();
+        return null;
+    }
+
+    @Override
+    public long add(Film film) {
+            jdbcTemplate.update(
+                    "insert into FILMS (FILM_NAME, DESCRIPTION, RELEASE_DATA, DURATION, MPA_ID) values (?,?,?,?,?)",
+                    film.getMpa(),
+                    film.getName(),
+                    film.getReleaseDate(),
+                    film.getDescription(),
+                    film.getDuration()
+            );
+            return film.getId();
+        }
+
+
+    @Override
+    public void change(Film entity) {
+
+    }
+
+    @Override
+    public void delete(Film entity) {
+
     }
 
     @Override
@@ -35,9 +65,6 @@ public class FilmDBStorage extends AbstractStorage<Film> implements FilmStorage 
 
     @Override
     public List<Film> getPopularFilms(Integer count) {
-        return super.getAll().stream()
-         //       .sorted(Comparator.comparing(Film::getRate))
-                .limit(count)
-                .collect(Collectors.toList());
+        return null;
     }
 }
