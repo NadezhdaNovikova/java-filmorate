@@ -10,6 +10,8 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -71,7 +73,20 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public Optional<User> getById(long id) {
-        return Optional.empty();
+        final String sqlQuery = "select * from USERS where USER_ID = ?";
+        final List<User> users = jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, id);
+        if (users.size() != 1) {
+            //TODO not found
+        }
+        return Optional.ofNullable(users.get(0));
+    }
+
+    static User makeUser(ResultSet rs, int rowNum) throws SQLException {
+        return new User(rs.getLong("USER_ID"),
+                rs.getString("EMAIL"),
+                rs.getString("LOGIN"),
+                rs.getString("USER_NAME"),
+                (rs.getDate("BIRTHDAY")).toLocalDate());
     }
 
     @Override

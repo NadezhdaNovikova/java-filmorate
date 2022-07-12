@@ -43,14 +43,14 @@ public class UserService {
     }
 
     public User createUser(@RequestBody User user) {
-        userValidateAlreadyExistsEmailAndLogin(user);
+      //  userValidateAlreadyExistsEmailAndLogin(user);
         userStorage.add(user);
         return user;
     }
 
     public User updateUser(@RequestBody User user) {
         getById(user.getId());
-        userValidateAlreadyExistsEmailAndLogin(user);
+      //  userValidateAlreadyExistsEmailAndLogin(user);
         userStorage.change(user);
         return user;
     }
