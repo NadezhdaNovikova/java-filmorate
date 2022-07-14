@@ -3,8 +3,24 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FilmStorage extends Storage<Film> {
+
+    @Override
+    Optional<Film> getById(long id);
+
+    @Override
+    List<Film> getAll();
+
+    @Override
+    Film add(Film film);
+
+    @Override
+    void change(Film film);
+
+    @Override
+    void delete(Film film);
 
     void addLike(Long id, Long userId);         //Добавить фильму лак пользователя
     void removeLike(Long id, Long userId);      //Удалить у фильма лайк пользователя

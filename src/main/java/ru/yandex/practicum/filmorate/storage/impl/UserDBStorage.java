@@ -16,6 +16,7 @@ import java.sql.Types;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -28,7 +29,7 @@ public class UserDBStorage implements UserStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public long add(User user) {
+    public User add(User user) {
         String sqlQuery = "insert into USERS(EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
                 "values (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -45,30 +46,8 @@ public class UserDBStorage implements UserStorage {
             }
             return stmt;
         }, keyHolder);
-        return keyHolder.getKey().longValue();
-    }
-
-    public void addFriend(long userId, long friendId) {
-//TODO
-    }
-
-
-    public void removeFriend(long userId, long friendId) {
-//TODO
-    }
-
-
-    public List<User> getUserFriends(long userId) {
-        List<User> friends = new ArrayList<>();
-//TODO
-        return friends;
-    }
-
-
-    public List<User> mutualFriends(long userId, long otherId) {
-        List<User> mutualFriends = new ArrayList<>();
-//TODO
-        return mutualFriends;
+        user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        return user;
     }
 
     @Override
@@ -104,4 +83,28 @@ public class UserDBStorage implements UserStorage {
     public void delete(User entity) {
 
     }
+
+    public void addFriend(long userId, long friendId) {
+//TODO
+    }
+
+
+    public void removeFriend(long userId, long friendId) {
+//TODO
+    }
+
+
+    public List<User> getUserFriends(long userId) {
+        List<User> friends = new ArrayList<>();
+//TODO
+        return friends;
+    }
+
+
+    public List<User> mutualFriends(long userId, long otherId) {
+        List<User> mutualFriends = new ArrayList<>();
+//TODO
+        return mutualFriends;
+    }
+
 }

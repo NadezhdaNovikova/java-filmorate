@@ -20,7 +20,6 @@ public class User extends BaseEntity{
     private String name;
     private LocalDate birthday;
 
-
     public User(Long id, String email, String login, String name, LocalDate birthday) {
         super(id);
         this.email = email;

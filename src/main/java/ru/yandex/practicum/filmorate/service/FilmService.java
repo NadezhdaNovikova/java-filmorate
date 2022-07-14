@@ -21,7 +21,7 @@ public class FilmService {
 
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
-    private final static LocalDate VALID_DATE_FILM = LocalDate.of(1895, 12, 28);
+    private static final LocalDate VALID_DATE_FILM = LocalDate.of(1895, 12, 28);
 
     @Autowired
     public FilmService(FilmDBStorage filmStorage, UserDBStorage userStorage) {
