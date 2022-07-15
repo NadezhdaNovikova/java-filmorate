@@ -22,13 +22,12 @@ public class Film extends BaseEntity{
     private Set<Genre> genres;
     private int rate;
 
-    public Film(Long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa, Set<Genre> genres) {
+    public Film(long id, String name, String description, LocalDate releaseDate, int duration, Mpa mpa) {
         super(id);
         this.name = name;
         this.description = description;
         this.releaseDate = releaseDate;
         this.duration = duration;
         this.mpa = mpa;
-        this.genres = genres;
     }
 }
