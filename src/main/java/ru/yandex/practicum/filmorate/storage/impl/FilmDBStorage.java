@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -26,37 +27,44 @@ import java.util.Set;
 public class FilmDBStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
-    MpaDBStorage mpaDBStorage;
+    private static MpaDBStorage mpaDBStorage;
+    private GenreDBStorage genreDBStorage;
 
-    public FilmDBStorage(JdbcTemplate jdbcTemplate, MpaDBStorage mpaDBStorage ) {
+    public FilmDBStorage(JdbcTemplate jdbcTemplate, MpaDBStorage mpaDBStorage, GenreDBStorage genreDBStorage) {
         this.jdbcTemplate = jdbcTemplate;
         this.mpaDBStorage = mpaDBStorage;
+        this.genreDBStorage = genreDBStorage;
     }
 
     @Override
     public Optional<Film> getById(long id) {
-        return Optional.empty();
+        final String sqlQuery = "select * from FILMS where FILM_ID = ?";
+
+            final List<Film> films = jdbcTemplate.query(sqlQuery,FilmDBStorage::makeFilm, id);
+            if (films.isEmpty()) {
+                throw new EntityNotFoundException(String.format("Фильм с id = %s не найден", id));
+            }
+            Film film = films.get(0);
+            Set<Genre> genres = genreDBStorage.getFilmGenres(film.getId());
+            film.setGenres(genres);
+            return Optional.ofNullable(film);
     }
 
     @Override
     public List<Film> getAll() {
-        final Map<Long, Set<Genre>> filmsGenres = getAllFilmGenres();
-        final String sql = "SELECT * FROM FILMS LEFT JOIN MPA ON FILMS.MPA_ID = MPA.MPA_ID";
-        return jdbcTemplate.query(sql, (rs, numRow) -> {
-            final Long filmId = rs.getLong("film_id");
-            return makeFilm(rs, filmsGenres.get(filmId));
-        });
+        final String sqlQuery = "SELECT * FROM FILMS";
+        final List<Film> films = jdbcTemplate.query(sqlQuery, FilmDBStorage::makeFilm);
+        return films;
     }
 
-    private Film makeFilm(ResultSet rs, Set<Genre> filmsGenres) throws SQLException {
+    static Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         return new Film(rs.getLong("FILM_ID"),
                 rs.getString("FILM_NAME"),
                 rs.getString("DESCRIPTION"),
-                rs.getDate("RELEASE_DATA").toLocalDate(),
+                rs.getDate("RELEASE_DATE").toLocalDate(),
                 rs.getInt("DURATION"),
-                mpaDBStorage.getById(rs.getInt("MPA_ID")),
-                filmsGenres);
-    }
+                mpaDBStorage.getById(rs.getInt("MPA_ID")));
+     }
 
     @Override
     public Film add(Film film) {
@@ -110,7 +118,7 @@ public class FilmDBStorage implements FilmStorage {
 
     @Override
     public void addLike(Long id, Long userId) {
-     //   super.data.get(id).addLike(userId);
+        //   super.data.get(id).addLike(userId);
     }
 
     @Override
@@ -135,9 +143,9 @@ public class FilmDBStorage implements FilmStorage {
         return filmGenres;
     }
 
-    public Film addGenres(Film film){
-        List <Genre> genres = film.getGenres().stream().toList();
-        if(!genres.isEmpty()) {
+    public Film addGenres(Film film) {
+        List<Genre> genres = film.getGenres().stream().toList();
+        if (!genres.isEmpty()) {
             for (int i = 0; i < film.getGenres().size(); i++) {
                 String sqlQuery = "insert into FILM_GENRES (FILM_ID, GENRE_ID) values (?, ?) on conflict do nothing";
 

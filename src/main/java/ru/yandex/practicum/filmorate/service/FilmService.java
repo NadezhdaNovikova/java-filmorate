@@ -39,16 +39,18 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-        log.info("СОЗДАЕМ ФИЛЬМ");
+
         filmValidate(film);
-        log.info("ПРОВЕРКА ПРОЙДЕНА");
         filmStorage.add(film);
         return film;
     }
 
     public Film updateFilm(Film film) {
+        log.info("ОБНОВЛЯЕМ ФИЛЬМ");
         getById(film.getId());
+        log.info("ФИЛЬМ НАЙДЕН");
         filmValidate(film);
+        log.info("ПРОВЕРКА ПРОЙДЕНА");
         filmStorage.change(film);
         return film;
     }
