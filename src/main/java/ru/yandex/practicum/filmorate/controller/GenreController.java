@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.impl.GenreDBStorage;
+import ru.yandex.practicum.filmorate.service.GenreService;
 
 import java.util.List;
 import java.util.Optional;
@@ -17,21 +17,21 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/genres")
 public class GenreController {
-    private final GenreDBStorage genreDBStorage;
+    private final GenreService genreService;
 
     @Autowired
-    public GenreController(GenreDBStorage genreDBStorage) {
-        this.genreDBStorage = genreDBStorage;
+    public GenreController(GenreService genreService) {
+        this.genreService = genreService;
     }
 
     @GetMapping("/genres")
     public List<Genre> getAll() {
-        return genreDBStorage.getAll();
+        return genreService.getAll();
     }
 
     @GetMapping("/genres/{id}")
     public Optional<Genre> getById(@PathVariable("id") final Long id) throws EntityNotFoundException {
-        return Optional.ofNullable(genreDBStorage.getById(id)
+        return Optional.ofNullable(genreService.getById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Жанр с id = %s не найден", id))));
     }
 

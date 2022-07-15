@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -14,7 +15,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -54,8 +54,8 @@ public class UserDBStorage implements UserStorage {
     public Optional<User> getById(long id) {
         final String sqlQuery = "select * from USERS where USER_ID = ?";
         final List<User> users = jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, id);
-        if (users.size() != 1) {
-            //TODO not found
+        if (users.isEmpty()) {
+            throw new EntityNotFoundException(String.format("Пользователь с id = %s не найден", id));
         }
         return Optional.ofNullable(users.get(0));
     }
@@ -70,41 +70,48 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        return null;
-    }
-
-
-    @Override
-    public void change(User entity) {
-
+        final String sqlQuery = "select * from USERS";
+        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser);
     }
 
     @Override
-    public void delete(User entity) {
+    public void change(User user) {
+        final String sqlQuery = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTHDAY = ? WHERE USER_ID = ?";
+        jdbcTemplate.update(sqlQuery
+                , user.getEmail()
+                , user.getLogin()
+                , user.getName()
+                , user.getBirthday()
+                , user.getId());
+    }
 
+    @Override
+    public void delete(User user) {
+        final String sql = "DELETE FROM USERS WHERE USER_ID = ?";
+        jdbcTemplate.update(sql, user.getId());
     }
 
     public void addFriend(long userId, long friendId) {
-//TODO
+        final String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
+        jdbcTemplate.update(sql, userId, friendId);
     }
-
 
     public void removeFriend(long userId, long friendId) {
-//TODO
+        final String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
+        jdbcTemplate.update(sql, userId, friendId);
     }
-
 
     public List<User> getUserFriends(long userId) {
-        List<User> friends = new ArrayList<>();
-//TODO
-        return friends;
+        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?)";
+        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId);
     }
 
-
     public List<User> mutualFriends(long userId, long otherId) {
-        List<User> mutualFriends = new ArrayList<>();
-//TODO
-        return mutualFriends;
+        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (select u.FRIEND_ID from FRIENDS u, FRIENDS o " +
+                "where u.FRIEND_ID = o.FRIEND_ID " +
+                "and u.USER_ID = ? " +
+                "and o.USER_ID = ?)";
+        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId, otherId);
     }
 
 }
