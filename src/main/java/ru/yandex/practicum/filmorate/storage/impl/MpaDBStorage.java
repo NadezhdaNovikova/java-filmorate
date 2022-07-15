@@ -2,15 +2,12 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public class MpaDBStorage implements MpaStorage {
@@ -21,13 +18,10 @@ public class MpaDBStorage implements MpaStorage {
     }
 
     @Override
-    public Optional<Mpa> getById(int id) {
+    public Mpa getById(int id) {
         final String sqlQuery = "select * from MPA where MPA_ID = ?";
         final List<Mpa> mpa = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeMpa(rs), id);
-        if (mpa.size() != 1) {
-            throw new EntityNotFoundException(String.format("Рейтинг с id = %s не найден", id));
-        }
-        return Optional.ofNullable(mpa.get(0));
+        return mpa.get(0);
     }
 
     @Override

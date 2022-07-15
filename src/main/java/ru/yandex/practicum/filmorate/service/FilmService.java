@@ -7,8 +7,8 @@ import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.impl.FilmDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.impl.FilmDBStorage;
 import ru.yandex.practicum.filmorate.storage.impl.UserDBStorage;
 
 import java.time.LocalDate;
@@ -33,15 +33,17 @@ public class FilmService {
         return filmStorage.getAll();
     }
 
-    public Film createFilm(Film film) {
-        filmValidate(film);
-        filmStorage.add(film);
-        return film;
-    }
-
     public Optional<Film> getById(Long id) throws EntityNotFoundException {
         return Optional.ofNullable(filmStorage.getById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Фильм с id = %s не найден", id))));
+    }
+
+    public Film createFilm(Film film) {
+        log.info("СОЗДАЕМ ФИЛЬМ");
+        filmValidate(film);
+        log.info("ПРОВЕРКА ПРОЙДЕНА");
+        filmStorage.add(film);
+        return film;
     }
 
     public Film updateFilm(Film film) {
