@@ -14,7 +14,7 @@ public interface FilmStorage extends Storage<Film> {
     List<Film> getAll();
 
     @Override
-    Film add(Film film);
+    Optional<Film> add(Film film);
 
     @Override
     Optional<Film> change(Film film);

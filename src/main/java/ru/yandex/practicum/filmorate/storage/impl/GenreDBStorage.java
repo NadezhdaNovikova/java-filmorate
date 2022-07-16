@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
@@ -16,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @Repository
+@Slf4j
 public class GenreDBStorage implements GenreStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -32,7 +34,7 @@ public class GenreDBStorage implements GenreStorage {
 
     @Override
     public Optional<Genre> getById(long id) {
-        final String sqlQuery = "select * from GENRES where GENRE_ID = ?";
+        final String sqlQuery = "SELECT * FROM GENRES WHERE GENRE_ID = ?";
         final List<Genre> genres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
         if (genres.isEmpty()) {
             throw new EntityNotFoundException(String.format("Жанр с id = %s не найден", id));
@@ -56,12 +58,12 @@ public class GenreDBStorage implements GenreStorage {
     }
 
     public void setFilmGenres(Film film) {
-        final Set<Genre> filmGenres = film.getGenres();
+        Set<Genre> filmGenres = film.getGenres();
 
-        if (filmGenres != null) {
-            final String addGenres = "INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
-            filmGenres.forEach(x -> jdbcTemplate.update(addGenres, film.getId(), x.getId()));
+        if (filmGenres.size() != 0) {
+            log.info("SET        " + filmGenres.size());
+            final String sqlQuery = "INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+            filmGenres.forEach(x -> jdbcTemplate.update(sqlQuery, film.getId(), x.getId()));
         }
     }
-
 }

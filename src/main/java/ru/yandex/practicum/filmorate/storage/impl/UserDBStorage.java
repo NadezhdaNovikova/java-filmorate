@@ -6,7 +6,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -30,9 +29,9 @@ public class UserDBStorage implements UserStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public User add(User user) {
-        String sqlQuery = "insert into USERS(EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
-                "values (?, ?, ?, ?)";
+    public Optional<User> add(User user) {
+        String sqlQuery = "INSERT INTO USERS(EMAIL, LOGIN, USER_NAME, BIRTHDAY) " +
+                "VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"USER_ID"});
@@ -48,12 +47,12 @@ public class UserDBStorage implements UserStorage {
             return stmt;
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).longValue());
-        return user;
+        return Optional.of(user);
     }
 
     @Override
     public Optional<User> getById(long id) {
-        final String sqlQuery = "select * from USERS where USER_ID = ?";
+        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID = ?";
         final List<User> users = jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, id);
         if (users.isEmpty()) {
             throw new EntityNotFoundException(String.format("Пользователь с id = %s не найден", id));
@@ -71,12 +70,12 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        final String sqlQuery = "select * from USERS";
+        final String sqlQuery = "SELECT * FROM USERS";
         return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser);
     }
 
     @Override
-    public Optional<Film> change(User user) {
+    public Optional<User> change(User user) {
         final String sqlQuery = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTHDAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sqlQuery
                 , user.getEmail()
@@ -89,30 +88,31 @@ public class UserDBStorage implements UserStorage {
 
     @Override
     public void delete(User user) {
-        final String sql = "DELETE FROM USERS WHERE USER_ID = ?";
-        jdbcTemplate.update(sql, user.getId());
+        final String sqlQuery = "DELETE FROM USERS WHERE USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, user.getId());
     }
 
     public void addFriend(long userId, long friendId) {
-        final String sql = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
-        jdbcTemplate.update(sql, userId, friendId);
+        final String sqlQuery = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
+        jdbcTemplate.update(sqlQuery, userId, friendId);
     }
 
     public void removeFriend(long userId, long friendId) {
-        final String sql = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
-        jdbcTemplate.update(sql, userId, friendId);
+        final String sqlQuery = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
+        jdbcTemplate.update(sqlQuery, userId, friendId);
     }
 
     public List<User> getUserFriends(long userId) {
-        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?)";
+        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT FRIEND_ID FROM FRIENDS " +
+                "WHERE USER_ID = ?)";
         return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId);
     }
 
     public List<User> mutualFriends(long userId, long otherId) {
-        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (select u.FRIEND_ID from FRIENDS u, FRIENDS o " +
-                "where u.FRIEND_ID = o.FRIEND_ID " +
-                "and u.USER_ID = ? " +
-                "and o.USER_ID = ?)";
+        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT U.FRIEND_ID FROM FRIENDS U, FRIENDS O " +
+                "WHERE U.FRIEND_ID = O.FRIEND_ID " +
+                "AND U.USER_ID = ? " +
+                "AND O.USER_ID = ?)";
         return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId, otherId);
     }
 
