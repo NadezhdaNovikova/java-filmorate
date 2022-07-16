@@ -72,5 +72,4 @@ class UserDBStorageTest {
                                 .hasFieldOrPropertyWithValue("birthday", LocalDate.of(1946, 8,20))
                 );
     }
-
 }

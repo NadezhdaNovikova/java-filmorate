@@ -37,7 +37,7 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public Film createFilm(@RequestBody Film film) {
+    public Optional<Film>  createFilm(@RequestBody Film film) {
         return filmService.createFilm(film);
     }
 

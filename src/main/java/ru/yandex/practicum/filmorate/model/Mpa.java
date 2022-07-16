@@ -9,7 +9,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class Mpa{
 
-    int id;
-    String name;
+    private int id;
+    private String name;
 
 }

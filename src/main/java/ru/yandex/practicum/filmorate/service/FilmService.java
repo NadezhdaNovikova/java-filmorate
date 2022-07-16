@@ -38,10 +38,10 @@ public class FilmService {
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Фильм с id = %s не найден", id))));
     }
 
-    public Film createFilm(Film film) {
+    public Optional<Film>  createFilm(Film film) {
         filmValidate(film);
         filmStorage.add(film);
-        return film;
+        return Optional.of(film);
     }
 
     public Optional<Film> updateFilm(Film film) {
