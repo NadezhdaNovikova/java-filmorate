@@ -60,9 +60,8 @@ public class GenreDBStorage implements GenreStorage {
     public void setFilmGenres(Film film) {
         Set<Genre> filmGenres = film.getGenres();
 
-        if (filmGenres.size() != 0) {
-            log.info("SET        " + filmGenres.size());
-            final String sqlQuery = "INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+        if (filmGenres != null) {
+            final String sqlQuery = "MERGE INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
             filmGenres.forEach(x -> jdbcTemplate.update(sqlQuery, film.getId(), x.getId()));
         }
     }
