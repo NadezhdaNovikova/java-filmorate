@@ -6,6 +6,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -75,7 +76,7 @@ public class UserDBStorage implements UserStorage {
     }
 
     @Override
-    public void change(User user) {
+    public Optional<Film> change(User user) {
         final String sqlQuery = "UPDATE USERS SET EMAIL = ?, LOGIN = ?, USER_NAME = ?, BIRTHDAY = ? WHERE USER_ID = ?";
         jdbcTemplate.update(sqlQuery
                 , user.getEmail()
@@ -83,6 +84,7 @@ public class UserDBStorage implements UserStorage {
                 , user.getName()
                 , user.getBirthday()
                 , user.getId());
+        return null;
     }
 
     @Override

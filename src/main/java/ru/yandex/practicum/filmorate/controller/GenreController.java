@@ -15,7 +15,7 @@ import java.util.Optional;
 
 @Slf4j
 @RestController
-@RequestMapping("/genres")
+
 public class GenreController {
     private final GenreService genreService;
 
@@ -23,6 +23,8 @@ public class GenreController {
     public GenreController(GenreService genreService) {
         this.genreService = genreService;
     }
+
+    @RequestMapping("/genres")
 
     @GetMapping("/genres")
     public List<Genre> getAll() {

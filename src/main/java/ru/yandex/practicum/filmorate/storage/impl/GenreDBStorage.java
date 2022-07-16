@@ -2,12 +2,15 @@ package ru.yandex.practicum.filmorate.storage.impl;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.EntityNotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -15,7 +18,7 @@ import java.util.Set;
 @Repository
 public class GenreDBStorage implements GenreStorage {
 
-    private JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public GenreDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -23,15 +26,17 @@ public class GenreDBStorage implements GenreStorage {
 
     @Override
     public List<Genre> getAll() {
-            String sqlQuery = "SELECT * FROM GENRES";
-            final List<Genre> genres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs));
-            return genres;
+        String sqlQuery = "SELECT * FROM GENRES ORDER BY GENRE_ID";
+        return new LinkedList<>(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs)));
     }
 
     @Override
     public Optional<Genre> getById(long id) {
         final String sqlQuery = "select * from GENRES where GENRE_ID = ?";
         final List<Genre> genres = jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), id);
+        if (genres.isEmpty()) {
+            throw new EntityNotFoundException(String.format("Жанр с id = %s не найден", id));
+        }
         return Optional.ofNullable(genres.get(0));
     }
 
@@ -43,9 +48,20 @@ public class GenreDBStorage implements GenreStorage {
     }
 
     Set<Genre> getFilmGenres(long id) {
-        final String sqlQuery = "SELECT * FROM GENRES WHERE GENRE_ID IN (SELECT FILM_GENRES.GENRE_ID FROM FILM_GENRES WHERE FILM_ID = ?)";
-        final Set<Genre> genres = new HashSet<>();
+        final String sqlQuery = "SELECT * FROM GENRES WHERE GENRE_ID IN " +
+                "(SELECT FILM_GENRES.GENRE_ID FROM FILM_GENRES WHERE FILM_ID = ?) ORDER BY GENRE_ID";
+        final Set<Genre> genres = new LinkedHashSet<>();
         genres.addAll(jdbcTemplate.query(sqlQuery, (rs, rowNum) -> makeGenre(rs), id));
         return genres;
     }
+
+    public void setFilmGenres(Film film) {
+        final Set<Genre> filmGenres = film.getGenres();
+
+        if (filmGenres != null) {
+            final String addGenres = "INSERT INTO FILM_GENRES (FILM_ID, GENRE_ID) VALUES (?, ?)";
+            filmGenres.forEach(x -> jdbcTemplate.update(addGenres, film.getId(), x.getId()));
+        }
+    }
+
 }

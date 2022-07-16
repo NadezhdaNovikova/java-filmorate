@@ -39,20 +39,16 @@ public class FilmService {
     }
 
     public Film createFilm(Film film) {
-
         filmValidate(film);
         filmStorage.add(film);
         return film;
     }
 
-    public Film updateFilm(Film film) {
-        log.info("ОБНОВЛЯЕМ ФИЛЬМ");
+    public Optional<Film> updateFilm(Film film) {
         getById(film.getId());
-        log.info("ФИЛЬМ НАЙДЕН");
         filmValidate(film);
-        log.info("ПРОВЕРКА ПРОЙДЕНА");
         filmStorage.change(film);
-        return film;
+        return filmStorage.change(film);
     }
 
     public void addLike(Long id, Long userId) {
