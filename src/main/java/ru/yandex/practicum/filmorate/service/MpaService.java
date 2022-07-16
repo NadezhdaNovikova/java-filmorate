@@ -27,6 +27,5 @@ public class MpaService {
         } catch (EntityNotFoundException e) {
             throw new EntityNotFoundException(String.format("Рейтинг с id = %s не найден", id));
         }
-
     }
 }

@@ -17,7 +17,7 @@ public interface FilmStorage extends Storage<Film> {
     Film add(Film film);
 
     @Override
-    void change(Film film);
+    Optional<Film> change(Film film);
 
     @Override
     void delete(Film film);
