@@ -2,7 +2,7 @@
 
 # Схема базы данных проекта
 
-![Data base scheme](https://github.com/NadezhdaNovikova/java-filmorate/blob/add-database/DB_diagram.PNG)
+![Data base scheme](https://github.com/NadezhdaNovikova/java-filmorate/blob/add-database/DB_diagram.png)
 
 [Веб версия схемы](https://dbdiagram.io/d/62c5cca269be0b672cb35b08)
 
