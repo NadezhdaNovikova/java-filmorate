@@ -21,7 +21,7 @@ public class MpaService {
         return mpaStorage.getAll();
     }
 
-    public Mpa getById(int id) throws EntityNotFoundException {
+    public Mpa getById(int id) {
         try {
             return mpaStorage.getById(id);
         } catch (EntityNotFoundException e) {

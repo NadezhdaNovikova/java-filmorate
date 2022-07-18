@@ -60,7 +60,7 @@ public class UserDBStorage implements UserStorage {
         return Optional.ofNullable(users.get(0));
     }
 
-    static User makeUser(ResultSet rs, int rowNum) throws SQLException {
+    private static User makeUser(ResultSet rs, int rowNum) throws SQLException {
         return new User(rs.getLong("USER_ID"),
                 rs.getString("EMAIL"),
                 rs.getString("LOGIN"),
@@ -83,7 +83,7 @@ public class UserDBStorage implements UserStorage {
                 , user.getName()
                 , user.getBirthday()
                 , user.getId());
-        return null;
+        return getById(user.getId());
     }
 
     @Override
@@ -91,29 +91,4 @@ public class UserDBStorage implements UserStorage {
         final String sqlQuery = "DELETE FROM USERS WHERE USER_ID = ?";
         jdbcTemplate.update(sqlQuery, user.getId());
     }
-
-    public void addFriend(long userId, long friendId) {
-        final String sqlQuery = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
-        jdbcTemplate.update(sqlQuery, userId, friendId);
-    }
-
-    public void removeFriend(long userId, long friendId) {
-        final String sqlQuery = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
-        jdbcTemplate.update(sqlQuery, userId, friendId);
-    }
-
-    public List<User> getUserFriends(long userId) {
-        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT FRIEND_ID FROM FRIENDS " +
-                "WHERE USER_ID = ?)";
-        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId);
-    }
-
-    public List<User> mutualFriends(long userId, long otherId) {
-        final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID IN (SELECT U.FRIEND_ID FROM FRIENDS U, FRIENDS O " +
-                "WHERE U.FRIEND_ID = O.FRIEND_ID " +
-                "AND U.USER_ID = ? " +
-                "AND O.USER_ID = ?)";
-        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, userId, otherId);
-    }
-
 }
