@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl;
+/*package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.MethodOrderer;
@@ -72,4 +72,4 @@ class UserDBStorageTest {
                                 .hasFieldOrPropertyWithValue("birthday", LocalDate.of(1946, 8,20))
                 );
     }
-}
+}*/
