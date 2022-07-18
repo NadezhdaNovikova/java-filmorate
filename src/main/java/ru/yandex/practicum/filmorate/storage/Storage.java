@@ -9,7 +9,7 @@ public interface Storage<T extends BaseEntity> {
 
     Optional<T> getById(long id);      //Получить объект по id
     List<T> getAll();                  //Получить все объекты
-    Optional<T>  add(T entity);                   //Добавить объект
-    Optional<T> change(T entity);             //Изменить объект
+    Optional<T>  add(T entity);        //Добавить объект
+    Optional<T> change(T entity);      //Изменить объект
     void delete(T entity);             //Удалить объект
 }

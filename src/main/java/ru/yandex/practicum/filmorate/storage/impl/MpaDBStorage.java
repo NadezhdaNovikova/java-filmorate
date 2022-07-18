@@ -34,11 +34,10 @@ public class MpaDBStorage implements MpaStorage {
         return jdbcTemplate.query(sqlQuery, MpaDBStorage::makeMpa);
     }
 
-    static Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
+    private static Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
         return new Mpa(
                 rs.getInt("MPA_ID"),
                 rs.getString("MPA_NAME")
         );
     }
-
 }

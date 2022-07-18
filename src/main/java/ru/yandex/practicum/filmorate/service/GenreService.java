@@ -22,7 +22,7 @@ public class GenreService {
         return genreStorage.getAll();
     }
 
-    public Optional<Genre> getById(Long id) throws EntityNotFoundException {
+    public Optional<Genre> getById(Long id) {
         return Optional.ofNullable(genreStorage.getById(id)
                 .orElseThrow(() -> new EntityNotFoundException(String.format("Жанр с id = %s не найден", id))));
     }

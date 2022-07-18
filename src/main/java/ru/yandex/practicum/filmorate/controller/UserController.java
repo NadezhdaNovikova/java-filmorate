@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,12 +14,16 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
+import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.isNull;
+
 @RestController
 @Validated
+@Slf4j
 public class UserController {
     private final UserService userService;
 
@@ -35,19 +40,21 @@ public class UserController {
     }
 
     @PostMapping(value = "/users")
-    public User createUser(@RequestBody User user) {
+    public User createUser(@Valid @RequestBody User user) {
+        userNameValidate(user);
         userService.createUser(user);
         return user;
     }
 
     @PutMapping(value = "/users")
-    public User updateUser(@RequestBody User user) {
+    public User updateUser(@Valid @RequestBody User user) {
+        userNameValidate(user);
         userService.updateUser(user);
         return user;
     }
 
     @DeleteMapping
-    public void deleteUser(@RequestBody User user) {
+    public void deleteUser(@Valid @RequestBody User user) {
         userService.deleteUser(user);
     }
 
@@ -69,13 +76,21 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public List<User> getUserFriends(@PathVariable("id") Long id) {
+    public List<Optional<User>>  getUserFriends(@PathVariable("id") Long id) {
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public List<User> mutualFriends(@PathVariable("id") Long id,
+    public List<Optional<User>>  mutualFriends(@PathVariable("id") Long id,
                                     @PathVariable("otherId") Long otherId) {
         return userService.mutualFriends(id, otherId);
+    }
+
+    private void userNameValidate(User user) {
+        if (isNull(user.getName()) | user.getName().isBlank()) {
+            log.info("Имя пользователя не указано - " + user.getName());
+            user.setName(user.getLogin());
+            log.info("Имя пользователя установлено равным логину: " + user.getName());
+        }
     }
 }
