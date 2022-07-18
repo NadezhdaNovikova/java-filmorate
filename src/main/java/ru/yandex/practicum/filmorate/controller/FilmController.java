@@ -21,7 +21,6 @@ import javax.validation.constraints.Positive;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @Validated
@@ -43,19 +42,19 @@ public class FilmController {
     }
 
     @PostMapping(value = "/films")
-    public Optional<Film>  createFilm(@Valid @RequestBody Film film) {
+    public Film createFilm(@Valid @RequestBody Film film) {
         filmDateValidate(film);
         return filmService.createFilm(film);
     }
 
     @PutMapping(value = "/films")
-    public Optional<Film> updateFilm(@Valid @RequestBody Film film) {
+    public Film updateFilm(@Valid @RequestBody Film film) {
         filmDateValidate(film);
         return filmService.updateFilm(film);
     }
 
     @GetMapping("/films/{id}")
-    public Optional<Film> getById(@PathVariable("id") Long id) {
+    public Film getById(@PathVariable("id") Long id) {
         return filmService.getById(id);
     }
 
@@ -72,7 +71,7 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Optional<Film>> getPopularFilms(@RequestParam(defaultValue = "10", required = false)
+    public List<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false)
                                           @Positive(message = "Число популярных фильмов должно быть больше 0.")
                                           Integer count) {
         return filmService.getPopularFilms(count);

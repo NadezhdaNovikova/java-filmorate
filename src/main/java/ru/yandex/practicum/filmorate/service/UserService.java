@@ -13,7 +13,6 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @Validated
@@ -37,19 +36,18 @@ public class UserService {
 
     public User createUser(@RequestBody User user) {
         userValidateAlreadyExistsEmailAndLogin(user);
-        userStorage.add(user);
-        return user;
+        ;
+        return userStorage.add(user).get();
     }
 
     public User updateUser(@RequestBody User user) {
         getById(user.getId());
         userValidateAlreadyExistsEmailAndLogin(user);
-        userStorage.change(user);
-        return user;
+        return userStorage.change(user).get();
     }
 
-    public Optional<User> getById( Long id) {
-        return userStorage.getById(id);
+    public User getById( Long id) {
+        return userStorage.getById(id).get();
     }
 
     public void addFriend(Long id, Long friendId) {
@@ -66,9 +64,9 @@ public class UserService {
         friendshipStorage.removeFriend(friendship);
     }
 
-    public List<Optional<User>> getUserFriends(Long id) {
+    public List<User> getUserFriends(Long id) {
         getById(id);
-        List<Optional<User>> friends = new ArrayList<>();
+        List<User> friends = new ArrayList<>();
         for (Long friendId :friendshipStorage.getUserFriends(id)
              ) {
             friends.add(getById(friendId));
@@ -76,10 +74,10 @@ public class UserService {
         return friends;
     }
 
-    public List<Optional<User>>  mutualFriends(Long id, Long otherId) {
+    public List<User>  mutualFriends(Long id, Long otherId) {
         getById(id);
         getById(otherId);
-        List<Optional<User>> friends = new ArrayList<>();
+        List<User> friends = new ArrayList<>();
         for (Long friendId :friendshipStorage.mutualFriends(id, otherId)
         ) {
             friends.add(getById(friendId));

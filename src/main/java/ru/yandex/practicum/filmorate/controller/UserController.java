@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.service.UserService;
 import javax.validation.Valid;
 import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
 import static java.util.Objects.isNull;
 
@@ -59,7 +58,7 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}")
-    public Optional<User> getById(@PathVariable("id") Long id) {
+    public User getById(@PathVariable("id") Long id) {
         return userService.getById(id);
     }
 
@@ -76,12 +75,12 @@ public class UserController {
     }
 
     @GetMapping("/users/{id}/friends")
-    public List<Optional<User>>  getUserFriends(@PathVariable("id") Long id) {
+    public List<User>  getUserFriends(@PathVariable("id") Long id) {
         return userService.getUserFriends(id);
     }
 
     @GetMapping("/users/{id}/friends/common/{otherId}")
-    public List<Optional<User>>  mutualFriends(@PathVariable("id") Long id,
+    public List<User>  mutualFriends(@PathVariable("id") Long id,
                                     @PathVariable("otherId") Long otherId) {
         return userService.mutualFriends(id, otherId);
     }

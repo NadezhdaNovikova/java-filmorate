@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class LikeDBStorage implements LikeStorage {
 
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public LikeDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -24,14 +24,14 @@ public class LikeDBStorage implements LikeStorage {
     public void addLike(Like like) {
         final String sqlQuery = "INSERT INTO LIKES (USER_ID, FILM_ID) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery,
-                like.getUser().get().getId(),
-                like.getFilm().get().getId());
+                like.getUser().getId(),
+                like.getFilm().getId());
     }
 
     @Override
     public void removeLike(Like like) {
         final String sqlQuery = "DELETE FROM LIKES WHERE USER_ID = ? AND FILM_ID = ?";
-        jdbcTemplate.update(sqlQuery, like.getUser().get().getId(), like.getFilm().get().getId());
+        jdbcTemplate.update(sqlQuery, like.getUser().getId(), like.getFilm().getId());
     }
 
     @Override
