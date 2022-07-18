@@ -16,7 +16,6 @@ import ru.yandex.practicum.filmorate.storage.impl.FilmDBStorage;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Slf4j
@@ -46,27 +45,27 @@ public class FilmService {
         return updatedFilms;
     }
 
-    public Optional<Film> getById(Long id) {
-        Optional<Film> film = filmStorage.getById(id);
+    public Film getById(Long id) {
+        Film film = filmStorage.getById(id).get();
         Set<Genre> genres = genreStorage.getFilmGenres(id);
-        film.get().setGenres(genres);
+        film.setGenres(genres);
         return film;
     }
 
-    public Optional<Film>  createFilm(Film film) {
+    public Film  createFilm(Film film) {
         filmStorage.add(film);
-        return Optional.of(film);
+        return film;
     }
 
-    public Optional<Film> updateFilm(Film film) {
+    public Film updateFilm(Film film) {
         getById(film.getId());
         filmStorage.change(film);
-        return filmStorage.change(film);
+        return filmStorage.change(film).get();
     }
 
     public void addLike(Long filmId, Long userId) {
         getById(filmId);
-        Like like = new Like(userStorage.getById(userId), getById(filmId));
+        Like like = new Like(userStorage.getById(userId).get(), getById(filmId));
         if (userStorage.getById(userId).isPresent()) {
             likeStorage.addLike(like);
         } else {
@@ -76,7 +75,7 @@ public class FilmService {
 
     public void removeLike(Long filmId, Long userId) {
         getById(filmId);
-        Like like = new Like(userStorage.getById(userId), getById(filmId));
+        Like like = new Like(userStorage.getById(userId).get(), getById(filmId));
         if (userStorage.getById(userId).isPresent()) {
             likeStorage.removeLike(like);
         } else {
@@ -84,8 +83,8 @@ public class FilmService {
         }
     }
 
-    public List<Optional<Film>> getPopularFilms(Integer count) {
-        List<Optional<Film>> films = new LinkedList<>();
+    public List<Film> getPopularFilms(Integer count) {
+        List<Film> films = new LinkedList<>();
         for (Long id: likeStorage.getPopularFilms(count)) {
             films.add(getById(id));
         }

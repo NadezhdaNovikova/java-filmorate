@@ -14,7 +14,7 @@ import java.util.List;
 @Component
 public class FriendshipDBStorage implements FriendshipStorage {
 
-    JdbcTemplate jdbcTemplate;
+    private final JdbcTemplate jdbcTemplate;
 
     public FriendshipDBStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -22,12 +22,12 @@ public class FriendshipDBStorage implements FriendshipStorage {
 
     public void addFriend(Friendship friendship) {
         final String sqlQuery = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
-        jdbcTemplate.update(sqlQuery, friendship.getUser().get().getId(), friendship.getFriend().get().getId());
+        jdbcTemplate.update(sqlQuery, friendship.getUser().getId(), friendship.getFriend().getId());
     }
 
     public void removeFriend(Friendship friendship) {
         final String sqlQuery = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
-        jdbcTemplate.update(sqlQuery, friendship.getUser().get().getId(), friendship.getFriend().get().getId());
+        jdbcTemplate.update(sqlQuery, friendship.getUser().getId(), friendship.getFriend().getId());
     }
 
     public List<Long> getUserFriends(long userId) {
