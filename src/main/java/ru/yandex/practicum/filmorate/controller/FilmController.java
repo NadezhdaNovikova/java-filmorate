@@ -25,6 +25,7 @@ import java.util.List;
 @RestController
 @Validated
 @Slf4j
+@RequestMapping("/films")
 public class FilmController {
     private final FilmService filmService;
     private static final LocalDate VALID_DATE_FILM = LocalDate.of(1895, 12, 28);
@@ -34,49 +35,46 @@ public class FilmController {
         this.filmService = filmService;
     }
 
-    @RequestMapping("/films")
-
-    @GetMapping("/films")
+    @GetMapping
     public Collection<Film> getAllFilms() {
         return filmService.getAllFilms();
     }
 
-    @PostMapping(value = "/films")
+    @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
         filmDateValidate(film);
         return filmService.createFilm(film);
     }
 
-    @PutMapping(value = "/films")
+    @PutMapping
     public Film updateFilm(@Valid @RequestBody Film film) {
         filmDateValidate(film);
         return filmService.updateFilm(film);
     }
 
-    @GetMapping("/films/{id}")
+    @GetMapping("{id}")
     public Film getById(@PathVariable("id") Long id) {
         return filmService.getById(id);
     }
 
-    @PutMapping(value = "/films/{id}/like/{userId}")
+    @PutMapping(value = "{id}/like/{userId}")
     public void addLike(@PathVariable("id") Long id,
                         @PathVariable("userId") Long userId) {
         filmService.addLike(id, userId);
     }
 
-    @DeleteMapping(value = "/films/{id}/like/{userId}")
+    @DeleteMapping(value = "{id}/like/{userId}")
     public void removeLike(@PathVariable("id") Long id,
                            @PathVariable("userId") Long userId) {
         filmService.removeLike(id, userId);
     }
 
-    @GetMapping("/films/popular")
+    @GetMapping("popular")
     public List<Film> getPopularFilms(@RequestParam(defaultValue = "10", required = false)
                                           @Positive(message = "Число популярных фильмов должно быть больше 0.")
                                           Integer count) {
         return filmService.getPopularFilms(count);
     }
-
 
     private void filmDateValidate(Film film) {
         if (film.getReleaseDate().isBefore(VALID_DATE_FILM)) {
