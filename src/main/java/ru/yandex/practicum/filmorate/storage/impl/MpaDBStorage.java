@@ -20,8 +20,8 @@ public class MpaDBStorage implements MpaStorage {
 
     @Override
     public Mpa getById(int id) {
-        final String sqlQuery = "SELECT * FROM FILMORATE.PUBLIC.MPA WHERE MPA_ID = ?";
-        final List<Mpa> mpa = jdbcTemplate.query(sqlQuery, MpaDBStorage::makeMpa, id);
+        final String sqlQuery = "SELECT * FROM MPA WHERE MPA_ID = ?";
+        final List<Mpa> mpa = jdbcTemplate.query(sqlQuery, this::makeMpa, id);
         if (mpa.isEmpty()) {
             throw new EntityNotFoundException(String.format("Рейтинг с id = %s не найден", id));
         }
@@ -31,10 +31,10 @@ public class MpaDBStorage implements MpaStorage {
     @Override
     public List<Mpa> getAll() {
         final String sqlQuery = "SELECT * FROM MPA";
-        return jdbcTemplate.query(sqlQuery, MpaDBStorage::makeMpa);
+        return jdbcTemplate.query(sqlQuery, this::makeMpa);
     }
 
-    private static Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
+    private Mpa makeMpa(ResultSet rs, int rowNum) throws SQLException {
         return new Mpa(
                 rs.getInt("MPA_ID"),
                 rs.getString("MPA_NAME")
