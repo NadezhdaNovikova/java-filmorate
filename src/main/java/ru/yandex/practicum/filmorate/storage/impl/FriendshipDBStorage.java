@@ -20,16 +20,19 @@ public class FriendshipDBStorage implements FriendshipStorage {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    @Override
     public void addFriend(Friendship friendship) {
         final String sqlQuery = "INSERT INTO FRIENDS (USER_ID, FRIEND_ID) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, friendship.getUser().getId(), friendship.getFriend().getId());
     }
 
+    @Override
     public void removeFriend(Friendship friendship) {
         final String sqlQuery = "DELETE FROM FRIENDS WHERE USER_ID = ? AND FRIEND_ID = ?";
         jdbcTemplate.update(sqlQuery, friendship.getUser().getId(), friendship.getFriend().getId());
     }
 
+    @Override
     public List<Long> getUserFriends(long userId) {
         SqlRowSet sqlQuery = jdbcTemplate.queryForRowSet("SELECT USER_ID FROM USERS WHERE USER_ID IN " +
                 "(SELECT FRIEND_ID FROM FRIENDS WHERE USER_ID = ?)", userId);
@@ -42,6 +45,7 @@ public class FriendshipDBStorage implements FriendshipStorage {
         return friendsId;
     }
 
+    @Override
     public List<Long> mutualFriends(long userId, long otherId) {
         SqlRowSet sqlQuery = jdbcTemplate.queryForRowSet("SELECT USER_ID FROM USERS WHERE USER_ID IN " +
                 "(SELECT U.FRIEND_ID FROM FRIENDS U, FRIENDS O " +
