@@ -13,7 +13,7 @@ import java.util.List;
 
 @Slf4j
 @RestController
-
+@RequestMapping("/genres")
 public class GenreController {
     private final GenreService genreService;
 
@@ -22,14 +22,12 @@ public class GenreController {
         this.genreService = genreService;
     }
 
-    @RequestMapping("/genres")
-
-    @GetMapping("/genres")
+    @GetMapping
     public List<Genre> getAll() {
         return genreService.getAll();
     }
 
-    @GetMapping("/genres/{id}")
+    @GetMapping("{id}")
     public Genre getById(@PathVariable("id") final Long id) {
         return genreService.getById(id);
     }

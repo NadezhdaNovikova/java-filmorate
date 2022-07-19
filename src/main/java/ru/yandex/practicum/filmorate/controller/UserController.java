@@ -23,6 +23,7 @@ import static java.util.Objects.isNull;
 @RestController
 @Validated
 @Slf4j
+@RequestMapping("/users")
 public class UserController {
     private final UserService userService;
 
@@ -31,21 +32,19 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping("/users")
-
-    @GetMapping("/users")
+    @GetMapping
     public Collection<User> getAll() {
         return userService.getAll();
     }
 
-    @PostMapping(value = "/users")
+    @PostMapping
     public User createUser(@Valid @RequestBody User user) {
         userNameValidate(user);
         userService.createUser(user);
         return user;
     }
 
-    @PutMapping(value = "/users")
+    @PutMapping
     public User updateUser(@Valid @RequestBody User user) {
         userNameValidate(user);
         userService.updateUser(user);
@@ -57,29 +56,29 @@ public class UserController {
         userService.deleteUser(user);
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("{id}")
     public User getById(@PathVariable("id") Long id) {
         return userService.getById(id);
     }
 
-    @PutMapping(value = "/users/{id}/friends/{friendId}")
+    @PutMapping(value = "{id}/friends/{friendId}")
     public void addFriend(@PathVariable("id") Long id,
                           @PathVariable("friendId") Long friendId) {
         userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping(value = "/users/{id}/friends/{friendId}")
+    @DeleteMapping(value = "{id}/friends/{friendId}")
     public void removeFriend(@PathVariable("id") Long id,
                              @PathVariable("friendId") Long friendId) {
         userService.removeFriend(id, friendId);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("{id}/friends")
     public List<User>  getUserFriends(@PathVariable("id") Long id) {
         return userService.getUserFriends(id);
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("{id}/friends/common/{otherId}")
     public List<User>  mutualFriends(@PathVariable("id") Long id,
                                     @PathVariable("otherId") Long otherId) {
         return userService.mutualFriends(id, otherId);
