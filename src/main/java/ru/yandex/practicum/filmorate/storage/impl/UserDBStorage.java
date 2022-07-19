@@ -53,14 +53,14 @@ public class UserDBStorage implements UserStorage {
     @Override
     public Optional<User> getById(long id) {
         final String sqlQuery = "SELECT * FROM USERS WHERE USER_ID = ?";
-        final List<User> users = jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser, id);
+        final List<User> users = jdbcTemplate.query(sqlQuery, this::makeUser, id);
         if (users.isEmpty()) {
             throw new EntityNotFoundException(String.format("Пользователь с id = %s не найден", id));
         }
         return Optional.ofNullable(users.get(0));
     }
 
-    private static User makeUser(ResultSet rs, int rowNum) throws SQLException {
+    private User makeUser(ResultSet rs, int rowNum) throws SQLException {
         return new User(rs.getLong("USER_ID"),
                 rs.getString("EMAIL"),
                 rs.getString("LOGIN"),
@@ -71,7 +71,7 @@ public class UserDBStorage implements UserStorage {
     @Override
     public List<User> getAll() {
         final String sqlQuery = "SELECT * FROM USERS";
-        return jdbcTemplate.query(sqlQuery, UserDBStorage::makeUser);
+        return jdbcTemplate.query(sqlQuery, this::makeUser);
     }
 
     @Override

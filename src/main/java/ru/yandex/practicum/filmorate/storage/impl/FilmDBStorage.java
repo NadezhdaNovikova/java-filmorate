@@ -53,7 +53,7 @@ public class FilmDBStorage implements FilmStorage {
         return films;
     }
 
-    Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
+    private Film makeFilm(ResultSet rs, int rowNum) throws SQLException {
         return new Film(rs.getLong("FILM_ID"),
                 rs.getString("FILM_NAME"),
                 rs.getString("DESCRIPTION"),
